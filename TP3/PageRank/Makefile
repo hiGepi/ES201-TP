@@ -2,7 +2,7 @@ CC_HOST=gcc
 CC_RISCV=riscv64-linux-gnu-gcc
 
 CFLAGS_COMMON=-std=c99 -O2 -g3 -lm
-CFLAGS_RISCV=-static -O2 -g3 -std=c99
+CFLAGS_RISCV=-static -O2 -std=c99
 
 all: pagerank pagerank_min.riscv pagerank_med.riscv pagerank_max.riscv
 

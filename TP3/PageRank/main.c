@@ -39,6 +39,19 @@ void mat_print( int n, int m, float A[n][m] ){
 	}
 }
 
+void vec_print(int n, float v[n]) {
+    for (int i = 0; i < n; i++)
+        printf("%f ", v[i]);
+    printf("\n");
+}
+
+void vec_init_uniform(int n, float v[n]) {
+    float c = 1.0f / (float)n;
+    for (int i = 0; i < n; i++)
+        v[i] = c;
+}
+
+
 void mat_vec_mul( int n, float d[n], float s[n], float A[n][n] ){
 	int i, j;
 	for( i = 0; i < n; i++ ){
@@ -206,8 +219,9 @@ int main( int argc, char* argv[] ){
 #endif
 
 	// init rows to be uniform distribution ( even if already so this will work ).
-	init_uniform( n, n, A );	
-	init_uniform( 1, n, r );
+	init_uniform(n, n, A);	
+	vec_init_uniform(n, r);
+
 
 #ifdef _VERBOSE
 	printf("T1:\n");	
@@ -235,7 +249,8 @@ int main( int argc, char* argv[] ){
 #endif
 	
 	printf("r:\n");
-	mat_print( 1, n, r );
+	vec_print(n, r);
+
 	return 0;
 }
 

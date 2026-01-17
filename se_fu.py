@@ -6,6 +6,7 @@
 # build/RISCV/gem5.opt -d m5out \
 #   configs/example/se_fu.py --cmd=program.riscv --caches \
 #   --ialu=4 --imult=1 --fpalu=4 --fpmult=1 --memport=2
+print("SE_FU: script loaded")
 
 import argparse
 import m5
@@ -96,9 +97,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cmd", required=True, help="RISC-V binary to run (static recommended)")
     ap.add_argument("--args", default="", help="Arguments to pass to program (single string)")
-    ap.add_argument("--cpu-type", choices=["O3", "TimingSimple"], default="O3")
+    ap.add_argument("--cpu-type", choices=["O3", "TimingSimpleCPU"], default="O3")
     ap.add_argument("--cpu-clock", default="1GHz")
-    ap.add_argument("--mem-size", default="2GB")
+    ap.add_argument("--mem-size", default="8GB")
     ap.add_argument("--caches", action="store_true", help="Enable simple private L1 + shared L2")
 
     # FU knobs
@@ -109,6 +110,9 @@ def main():
     ap.add_argument("--memport", type=int, default=2)
 
     args = ap.parse_args()
+
+    print("SE_FU: parsed args", args)
+
 
     system = System()
     system.clk_domain = SrcClockDomain(clock=args.cpu_clock, voltage_domain=VoltageDomain())
@@ -126,23 +130,30 @@ def main():
     system.membus = SystemXBar()
     system.system_port = system.membus.cpu_side_ports
 
+    # Interrupts (important)
+    system.cpu.createInterruptController()
+
     if args.caches:
         system.cpu.icache = L1ICache()
         system.cpu.dcache = L1DCache()
         system.l2bus = L2XBar()
         system.l2cache = L2Cache()
 
-        system.cpu.icache.connectCPU(system.cpu)
-        system.cpu.dcache.connectCPU(system.cpu)
+        # CPU <-> L1
+        system.cpu.icache_port = system.cpu.icache.cpu_side
+        system.cpu.dcache_port = system.cpu.dcache.cpu_side
 
-        system.cpu.icache.connectBus(system.l2bus)
-        system.cpu.dcache.connectBus(system.l2bus)
+        # L1 <-> L2 bus
+        system.cpu.icache.mem_side = system.l2bus.cpu_side_ports
+        system.cpu.dcache.mem_side = system.l2bus.cpu_side_ports
 
-        system.l2cache.connectCPUSideBus(system.l2bus)
-        system.l2cache.connectMemSideBus(system.membus)
+        # L2 <-> buses
+        system.l2cache.cpu_side = system.l2bus.mem_side_ports
+        system.l2cache.mem_side = system.membus.cpu_side_ports
     else:
-        system.cpu.icache = None
-        system.cpu.dcache = None
+        # No caches: CPU directly to membus
+        system.cpu.icache_port = system.membus.cpu_side_ports
+        system.cpu.dcache_port = system.membus.cpu_side_ports
 
     system.mem_ctrl = MemCtrl()
     system.mem_ctrl.dram = DDR3_1600_8x8()
@@ -150,15 +161,20 @@ def main():
     system.mem_ctrl.port = system.membus.mem_side_ports
 
     # Workload (SE)
+    system.workload = SEWorkload.init_compatible(args.cmd)
     process = Process()
     process.cmd = [args.cmd] + (args.args.split() if args.args else [])
     system.cpu.workload = process
     system.cpu.createThreads()
 
     root = Root(full_system=False, system=system)
+    print("SE_FU: instantiating")
+
     m5.instantiate()
+    print("SE_FU: simulating")
+
     exit_event = m5.simulate()
     print(f"Exiting @ tick {m5.curTick()} because {exit_event.getCause()}")
 
-if __name__ == "__main__":
-    main()
+main()
+
