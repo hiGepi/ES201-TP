@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "m5ops.h"
+#include <gem5/m5ops.h>
 #define N 50
 
 int main(void){

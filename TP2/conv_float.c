@@ -5,7 +5,7 @@
 
 static float input[N][N];
 static float kernel[K][K];
-static float output[N-K+1][N-K+1];a
+static float output[N-K+1][N-K+1];
 
 // Fonction de convolution
 void convolution2D() {
