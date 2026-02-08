@@ -1,3 +1,5 @@
+# Pour le projet 
+
 sudo apt update
 sudo apt install -y gcc-arm-linux-gnueabihf
 sudo apt install -y \
@@ -14,3 +16,6 @@ pip3 install --user pyparsing
 
 scons build/ARM/gem5.opt -j$(nproc)
 
+# pour cacti 
+
+sudo apt install -y g++-multilib libc6-dev-i386
