@@ -1,4 +1,4 @@
-Ajouter à BranchPredictor.py :
+Ajouter à BranchPredictor.py (gem5/src/cpu/pred) :
 
 class StaticTakenBP(BranchPredictor):
     type = "StaticTakenBP"

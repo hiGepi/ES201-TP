@@ -25,3 +25,23 @@ output*
 *.tmp
 *~
 .core
+
+# ===== TP4: sorties et scripts =====
+TP4/results_*/
+TP4/**/m5out*/
+TP4/Projet/cacti65/cacti
+TP4/Projet/cacti65/generated/
+TP4/Projet/cacti65/obj_opt/
+TP4/run_*.sh
+TP4/plot_*.py
+TP4/Projet/cacti65/out_2021_*.txt
+TP4/Projet/cacti65/result_*.txt
+TP4/Projet/blowfish/log_make
+TP4/Projet/blowfish/bfspeed
+TP4/Projet/blowfish/bftest
+TP4/SHA/sha
+TP4/SHA/sha_out
+TP4/exo3/normale
+TP4/exo3/pointer
+TP4/exo3/tempo
+TP4/exo3/unrol

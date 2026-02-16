@@ -46,6 +46,9 @@ def parse_args():
     ap.add_argument("--out", default="", help="juste informatif")
     ap.add_argument("--clock", default="2GHz")
     ap.add_argument("--mem-size", default="2GB")
+    ap.add_argument("--l1i-size", default="32kB")
+    ap.add_argument("--l1d-size", default="32kB")
+    ap.add_argument("--l2-size", default="512kB")
     ap.add_argument("--maxinsts", type=int, default=0)
     return ap.parse_args()
 
@@ -88,18 +91,18 @@ def build_system(args):
     # -------- Caches C-A15 --------
     # I-L1: 32KB / 64 / 2
     system.cpu.icache = L1ICache()
-    system.cpu.icache.size = "32kB"
+    system.cpu.icache.size = args.l1i_size
     system.cpu.icache.assoc = 2
 
     # D-L1: 32KB / 64 / 2
     system.cpu.dcache = L1DCache()
-    system.cpu.dcache.size = "32kB"
+    system.cpu.dcache.size = args.l1d_size
     system.cpu.dcache.assoc = 2
 
     # L2: 512KB / 64 / 16
     system.l2bus = L2XBar()
     system.l2cache = L2Cache()
-    system.l2cache.size = "512kB"
+    system.l2cache.size = args.l2_size
     system.l2cache.assoc = 16
 
     system.cpu.icache.connectCPU(system.cpu)
@@ -131,13 +134,15 @@ def build_system(args):
 def main():
     args = parse_args()
     system = build_system(args)
+
+    if args.maxinsts > 0:
+        # simulate() prend des ticks; on fixe ici une limite en instructions.
+        system.cpu.max_insts_any_thread = args.maxinsts
+
     root = Root(full_system=False, system=system)
     m5.instantiate()
 
-    if args.maxinsts > 0:
-        ev = m5.simulate(args.maxinsts)
-    else:
-        ev = m5.simulate()
+    ev = m5.simulate()
 
     m5.stats.dump()
     print(f"Exiting @ tick {m5.curTick()} because {ev.getCause()}")
